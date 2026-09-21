@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+  <head>
+    <title>FxBank — Digital Banking SaaS Platform</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
+  </head>
+
+  <body class="min-h-full flex flex-col font-sans antialiased bg-slate-900 text-slate-100">
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between">
+        <div class="flex items-center gap-x-3">
+          <div class="h-9 w-9 rounded-lg bg-gradient-to-tr from-sky-600 to-cyan-400 flex items-center justify-center font-black text-white text-lg tracking-wider shadow-md shadow-sky-500/20">
+            FX
+          </div>
+          <a href="/" class="text-xl font-bold text-white tracking-tight hover:text-sky-400 transition-colors">
+            FxBank
+          </a>
+        </div>
+        <nav class="flex items-center gap-x-6">
+          <a href="https://www.rubyonrails.academy" target="_blank" rel="noopener noreferrer" class="text-xs font-medium text-slate-400 hover:text-white transition-colors">
+            rubyonrails.academy
+          </a>
+          <a href="https://github.com/academyror/fxbank" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold px-3 py-1.5 rounded-md bg-slate-800 text-sky-400 hover:bg-slate-700 hover:text-sky-300 transition-colors">
+            GitHub
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <% if flash.any? %>
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-4">
+        <% flash.each do |type, message| %>
+          <% alert_class = type.to_s == 'alert' || type.to_s == 'error' ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30' %>
+          <div class="p-4 rounded-lg border text-sm font-medium mb-3 <%= alert_class %>">
+            <%= message %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <main class="flex-1">
+      <%= yield %>
+    </main>
+
+    <footer class="border-t border-slate-800 bg-slate-950/60 py-8 text-center text-xs text-slate-500">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <p>FxBank &bull; Open-Source SaaS Banking Platform reference from <a href="https://www.rubyonrails.academy" class="text-sky-400 hover:underline">Ruby on Rails Academy</a>.</p>
+        <p class="mt-1">Taught in Course 1: Building a Modern SaaS Banking Application with Rails 7/8.</p>
+      </div>
+    </footer>
+  </body>
+</html>
