@@ -1,4 +1,4 @@
-# FxBank &mdash; Section 1: Architecture, Tooling & Environment
+# FxBank &mdash; Section 2: Domain Modeling & Database Craft
 
 Welcome to **FxBank**, a production-grade digital banking SaaS platform built with Ruby on Rails 7.2+, PostgreSQL, Tailwind CSS, and Hotwire.
 
@@ -6,65 +6,91 @@ This repository accompanies **Course 1: Building a Modern SaaS Banking Applicati
 
 ---
 
-## 📌 Section 1 Overview
+## 📌 Section 2 Overview
 
-In Section 1, we lay the professional foundation for the entire banking platform:
-- Deconstructed the digital banking domain (Users, Accounts, immutable Transfer ledgers).
-- Initialized the Rails 7.2 architecture configured for PostgreSQL, Tailwind CSS, and esbuild.
-- Configured development process orchestration with `Procfile.dev` and `bin/dev`.
-- Implemented modern layout scaffolding and system health checking (`/up`).
-
----
-
-## 🚀 Branch Checkpoints
-
-This repository uses atomic Git branches and tags for each section of the course:
-
-| Branch | Tag | Focus |
-|---|---|---|
-| `section/01-foundations-architecture` | `v0.1-section-1` | Architecture, Tooling & Environment |
-| `section/02-domain-modeling-database` | `v0.2-section-2` | Users, Accounts, Transfers & Pessimistic Locks |
-| `section/03-authentication-authorization` | `v0.3-section-3` | Devise Authentication & Pundit Policies |
-| `section/04-hotwire-frontend-turbo-stimulus` | `v0.4-section-4` | Reactive Hotwire UI, Turbo Frames & Streams |
-| `section/05-cloud-media-background-jobs-email` | `v0.5-section-5` | Active Storage, Solid Queue & Action Mailer |
-| `section/06-automated-testing-rspec-tdd` | `v0.6-section-6` | Financial Testing Pyramid (RSpec, FactoryBot) |
-| `section/07-deployment-monitoring-day2-ops` | `v0.7-section-7` | Multi-Stage Docker, Kamal 2, Sentry & Lograge |
-| `main` | Latest | Complete, Production-Ready Application |
+In Section 2, we translate high-level financial rules into durable database schemas and atomic money movements:
+- Separated customer identity (`User`) from financial holdings (`Account`) and bilateral transfer ledgers (`Transfer`).
+- Enforced PostgreSQL database-level check constraints: `balance_cents >= 0` and `amount_cents > 0`.
+- Built `Transfers::TransferService` with pessimistic row locking (`lock!`) using deterministic primary key ID sorting to eliminate race conditions and deadlocks.
+- Designed idempotency deduplication with unique UUID indexes to prevent duplicate debits from network retries.
+- Seeded realistic banking fixtures in `db/seeds.rb`.
 
 ---
 
-## 💻 Getting Started (Section 1)
+## 🗄️ Relational Domain Architecture
 
-### 1. Prerequisites
-- Ruby 3.2.0 or higher
-- PostgreSQL 14+
-- Node.js 18+ and Yarn
+```mermaid
+erDiagram
+    USERS ||--o{ ACCOUNTS : "has_many"
+    ACCOUNTS ||--o{ TRANSFERS : "sent_transfers (from_account_id)"
+    ACCOUNTS ||--o{ TRANSFERS : "received_transfers (to_account_id)"
 
-### 2. Setup
-```bash
-# Clone the repository
-git clone git@github.com:academyror/fxbank.git
-cd fxbank
+    USERS {
+        bigint id PK
+        string email
+        string first_name
+        string last_name
+        string phone_number
+        string kyc_status
+        datetime created_at
+    }
 
-# Checkout Section 1
-git checkout section/01-foundations-architecture
+    ACCOUNTS {
+        bigint id PK
+        bigint user_id FK
+        string account_number
+        bigint balance_cents
+        string currency
+        string status
+        datetime created_at
+    }
 
-# Install dependencies
-bundle install
-yarn install
-
-# Prepare database
-bin/rails db:create
-
-# Start development servers (Rails + Tailwind watch + esbuild watch)
-bin/dev
+    TRANSFERS {
+        bigint id PK
+        bigint from_account_id FK
+        bigint to_account_id FK
+        bigint amount_cents
+        string status
+        string idempotency_key
+        string description
+        datetime created_at
+    }
 ```
 
-Visit `http://localhost:3000` in your browser.
+---
+
+## 💻 Interactive Concurrency Verification Drill
+
+You can test race-condition protection directly in `bin/rails console` using concurrent Ruby threads:
+
+```ruby
+# Start console
+bin/rails c
+
+# Fetch accounts
+alice = Account.first
+bob = Account.second
+
+# Spawn two concurrent threads attempting to spend Alice's balance simultaneously:
+t1 = Thread.new do
+  Transfers::TransferService.call(from_account: alice, to_account: bob, amount_cents: alice.balance_cents)
+rescue Transfers::TransferError => e
+  puts "Thread 1 error: #{e.message}"
+end
+
+t2 = Thread.new do
+  Transfers::TransferService.call(from_account: alice, to_account: bob, amount_cents: alice.balance_cents)
+rescue Transfers::TransferError => e
+  puts "Thread 2 error: #{e.message}"
+end
+
+[t1, t2].each(&:join)
+# One thread succeeds; the other safely raises Transfers::InsufficientFundsError with zero balance drift!
+```
 
 ---
 
-## 📚 Full Course & Video Walkthroughs
+## 📚 Full Course & Interactive Curriculum
 
-To access the interactive lessons, quizzes, architectural deep-dives, and community mentorship, visit:  
+To access the complete step-by-step video lessons and community mentorship:  
 👉 **[https://www.rubyonrails.academy](https://www.rubyonrails.academy)**
