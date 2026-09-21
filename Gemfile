@@ -43,6 +43,11 @@ gem "solid_queue"
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# Production Observability & Monitoring
+gem "lograge", "~> 0.14"
+gem "sentry-ruby", "~> 5.17"
+gem "sentry-rails", "~> 5.17"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"

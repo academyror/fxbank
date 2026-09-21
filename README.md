@@ -1,4 +1,4 @@
-# FxBank &mdash; Section 6: Automated Testing & Quality Gates (TDD with RSpec)
+# FxBank &mdash; Section 7: Zero-Downtime Deployment, Monitoring & Day-2 Operations
 
 Welcome to **FxBank**, a production-grade digital banking SaaS platform built with Ruby on Rails 7.2+, PostgreSQL, Tailwind CSS, and Hotwire.
 
@@ -6,31 +6,48 @@ This repository accompanies **Course 1: Building a Modern SaaS Banking Applicati
 
 ---
 
-## 📌 Section 6 Overview
+## 📌 Section 7 Overview
 
-In Section 6, we construct an automated financial safety net using **RSpec**, **FactoryBot**, and **Shoulda Matchers**:
-- **Testing Pyramid Execution**:
-  - **70% Unit Specs**: Testing domain invariants, model validations, custom calculation helpers, and isolated Pundit policies.
-  - **20% Request Specs**: Testing Devise authentication cookies, HTTP routing contracts, Turbo 303 redirects, and 422 Unprocessable Content handling.
-  - **10% Service & Job Specs**: Verifying transaction atomicity, rollback on unexpected SQL failures, and background queue dispatching.
-- **Financial Concurrency & Atomic Rollback Guarantees**:
-  - `Transfers::TransferService`: Overdraft tests ensuring 0 balance drift under failed transfers.
-  - Simulating database exceptions mid-transaction to verify atomic rollback guarantees.
-  - Idempotency key deduplication tests ensuring repeated retries do not double-debit funds.
+In Section 7, we take FxBank from localhost to cloud production servers with zero-downtime containerized deployments and enterprise observability:
+- **Multi-Stage Production Dockerfile**:
+  - Compiles assets and gems in a disposable build stage.
+  - Generates a minimal, hardened Debian-slim runtime image (~180MB) running as a non-root `rails` user.
+  - Optimizes memory usage with `jemalloc` (`LD_PRELOAD`).
+- **Kamal 2 Deployment Automation**:
+  - `config/deploy.yml`: Zero-downtime rolling updates, Traefik/Kamal-proxy SSL termination, and background worker orchestration.
+- **Docker Compose (`docker-compose.yml`)**:
+  - Local multi-container environment running PostgreSQL 16, Puma web threads, and Solid Queue dispatchers.
+- **Production Observability & Reliability**:
+  - Sentry exception monitoring configured with PII sanitization.
+  - Lograge structured JSON logs for Datadog, ELK, or Papertrail ingestion.
+  - Automated PostgreSQL backup script (`bin/db_backup.sh`) with retention policies.
+  - System health check `/up` endpoint.
 
 ---
 
-## 🧪 Running the Test Suite
+## 🐳 Running with Docker Compose
+
+To boot the complete application locally using Docker:
 
 ```bash
-# Run all specs
-bundle exec rspec
+# Build and run containers (web, postgres, solid_queue)
+docker compose up --build
 
-# Run specific domain service specs
-bundle exec rspec spec/services/transfers/transfer_service_spec.rb
+# Run migrations inside container
+docker compose exec web bin/rails db:prepare db:seed
 
-# Run authorization policy specs
-bundle exec rspec spec/policies/
+# Access the application
+open http://localhost:3000
+```
+
+---
+
+## 🚀 Deploying to Production with Kamal 2
+
+```bash
+# Deploy to production servers
+kamal setup
+kamal deploy
 ```
 
 ---

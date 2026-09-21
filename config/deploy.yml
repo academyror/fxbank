@@ -1,0 +1,51 @@
+# Kamal 2 Deployment Configuration for FxBank
+service: fxbank
+
+image: academyror/fxbank
+
+servers:
+  web:
+    hosts:
+      - 192.168.0.1
+    labels:
+      traefik.http.routers.fxbank.rule: Host(`fxbank.io`)
+      traefik.http.routers.fxbank.entrypoints: websecure
+      traefik.http.routers.fxbank.tls.certresolver: letsencrypt
+  job:
+    hosts:
+      - 192.168.0.1
+    cmd: bin/rails solid_queue:start
+
+proxy:
+  ssl: true
+  host: fxbank.io
+  app_port: 3000
+
+registry:
+  server: ghcr.io
+  username: academyror
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - DATABASE_URL
+    - SENTRY_DSN
+  clear:
+    SOLID_QUEUE_IN_PUMA: false
+    RAILS_LOG_TO_STDOUT: true
+
+accessories:
+  db:
+    image: postgres:16-alpine
+    host: 192.168.0.1
+    port: "127.0.0.1:5432:5432"
+    env:
+      clear:
+        POSTGRES_DB: fxbank_production
+        POSTGRES_USER: fxbank
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data
