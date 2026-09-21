@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   end
 
   resources :transfers, only: %i[create show]
+  resource :kyc_verification, only: %i[new create show]
 
   root "home#index"
 end

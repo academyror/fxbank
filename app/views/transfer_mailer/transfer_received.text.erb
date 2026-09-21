@@ -1,0 +1,13 @@
+FxBank — Credit Notification
+============================
+
+Hello <%= @user.first_name %>,
+
+You have received a transfer of <%= @transfer.formatted_amount %> into account <%= @transfer.to_account.account_number %>.
+
+Sender: <%= @transfer.from_account.account_number %> (<%= @transfer.from_account.user.full_name %>)
+Memo: <%= @transfer.description.presence || "None" %>
+Date: <%= @transfer.created_at.strftime("%B %d, %Y at %H:%M UTC") %>
+
+Funds are immediately available in your account.
+fxbank.io

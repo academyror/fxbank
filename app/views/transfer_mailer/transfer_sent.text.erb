@@ -1,0 +1,14 @@
+FxBank — Transfer Confirmation
+===============================
+
+Hello <%= @user.first_name %>,
+
+Your transfer of <%= @transfer.formatted_amount %> has been successfully executed.
+
+Recipient: <%= @transfer.to_account.account_number %> (<%= @transfer.to_account.user.full_name %>)
+From Account: <%= @transfer.from_account.account_number %>
+Date: <%= @transfer.created_at.strftime("%B %d, %Y at %H:%M UTC") %>
+Reference Key: <%= @transfer.idempotency_key %>
+
+Thank you for banking with FxBank.
+fxbank.io

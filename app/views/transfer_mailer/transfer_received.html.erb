@@ -1,0 +1,28 @@
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b;">
+  <div style="background: #0284c7; padding: 20px; border-radius: 8px; color: #ffffff; margin-bottom: 20px;">
+    <h2 style="margin: 0; font-size: 1.25rem;">FxBank &mdash; Credit Notification</h2>
+  </div>
+
+  <p>Hello <%= @user.first_name %>,</p>
+
+  <p>You have received a transfer of <strong style="color: #059669;"><%= @transfer.formatted_amount %></strong> into account <strong><%= @transfer.to_account.account_number %></strong>.</p>
+
+  <table style="width: 100%; border-collapse: collapse; margin: 20px 0; background: #f8fafc; border-radius: 6px; padding: 12px;">
+    <tr>
+      <td style="padding: 8px; color: #64748b; font-size: 0.85rem;">Sender:</td>
+      <td style="padding: 8px; font-weight: 600;"><%= @transfer.from_account.account_number %> (<%= @transfer.from_account.user.full_name %>)</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; color: #64748b; font-size: 0.85rem;">Memo:</td>
+      <td style="padding: 8px;"><%= @transfer.description.presence || "None" %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; color: #64748b; font-size: 0.85rem;">Date:</td>
+      <td style="padding: 8px;"><%= @transfer.created_at.strftime("%B %d, %Y at %H:%M UTC") %></td>
+    </tr>
+  </table>
+
+  <p style="color: #64748b; font-size: 0.85rem; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 24px;">
+    Funds are immediately available in your account. Thank you for banking with FxBank &bull; fxbank.io
+  </p>
+</div>

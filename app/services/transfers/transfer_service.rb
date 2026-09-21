@@ -50,7 +50,7 @@ module Transfers
         @to_account.update!(balance_cents: @to_account.balance_cents + @amount_cents)
 
         # 6. Create immutable audit record
-        Transfer.create!(
+        transfer = Transfer.create!(
           from_account: @from_account,
           to_account: @to_account,
           amount_cents: @amount_cents,
@@ -59,6 +59,15 @@ module Transfers
           idempotency_key: @idempotency_key
         )
       end
+
+      # 7. Dispatch asynchronous notification worker
+      begin
+        TransferNotificationJob.perform_later(transfer.id)
+      rescue StandardError => e
+        Rails.logger.warn("[TransferService] Could not enqueue notification: #{e.message}")
+      end
+
+      transfer
     end
 
     private

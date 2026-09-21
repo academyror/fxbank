@@ -8,6 +8,10 @@ class User < ApplicationRecord
 
   has_many :accounts, dependent: :restrict_with_error
 
+  # Active Storage attachments
+  has_one_attached :avatar
+  has_one_attached :kyc_document
+
   enum :role, { customer: "customer", compliance_officer: "compliance_officer", admin: "admin" }, default: :customer
 
   validates :first_name, :last_name, presence: true
