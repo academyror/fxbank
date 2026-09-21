@@ -1,4 +1,4 @@
-# FxBank &mdash; Section 3: Authentication, Authorization & Roles
+# FxBank &mdash; Section 4: Hotwire Frontend (Turbo & Stimulus)
 
 Welcome to **FxBank**, a production-grade digital banking SaaS platform built with Ruby on Rails 7.2+, PostgreSQL, Tailwind CSS, and Hotwire.
 
@@ -6,29 +6,29 @@ This repository accompanies **Course 1: Building a Modern SaaS Banking Applicati
 
 ---
 
-## 📌 Section 3 Overview
+## 📌 Section 4 Overview
 
-In Section 3, we establish hardened security boundaries around our banking application:
-- Integrated **Devise** with high bcrypt stretches (12 in production, 1 in test), 2-hour password reset windows, and failed attempt account locking.
-- Configured mandatory email confirmation (`confirmable`) with zero grace period to eliminate anonymous bot abuse.
-- Custom parameter sanitization in `ApplicationController` for KYC identity fields (`first_name`, `last_name`, `phone_number`).
-- Integrated **Pundit** declarative authorization policies:
-  - `AccountPolicy`: strict customer ownership checks and scoped queries (`policy_scope`) to eliminate IDOR (Insecure Direct Object Reference) vulnerabilities.
-  - `TransferPolicy`: bilateral checks allowing only verified senders on active accounts to debit funds, and restricting audit receipts to participants and admins.
-- Dynamic role-based post-login redirects (`after_sign_in_path_for`).
+In Section 4, we build an interactive Hotwire banking dashboard without the complexity or weight of heavy client-side JavaScript frameworks:
+- **Turbo Drive**: Fast SPA-like navigations, progress indicators, HTTP 303 redirects on success, and HTTP 422 on validation failures.
+- **Turbo Frames**:
+  - Accounts dashboard with inline modal transfer drawers (`turbo_frame_tag "transfer_modal"`).
+  - Scope form validation errors within the modal without full page reload.
+- **Turbo Streams**:
+  - Real-time reactive updates prepending completed transfers directly into `#transfers_list`.
+  - In-place account balance replacement (`account_balance_:id`).
+  - Automatic dismissal of the transfer modal.
+- **Stimulus Controllers**:
+  - `clipboard_controller.js`: Instant account number copying with visual feedback.
+  - `currency_input_controller.js`: Live dollar-to-cent formatting and preview.
+  - `modal_controller.js`: Clean keyboard (Escape) and backdrop dismiss handlers.
 
 ---
 
-## 🔐 Default Seed Credentials
+## 🎨 User Interface Highlights
 
-Run `bin/rails db:seed` to create pre-confirmed demo users:
-
-| User | Email | Password | Role | KYC Status |
-|---|---|---|---|---|
-| Eleanor (Admin) | `admin@fxbank.io` | `Password123!` | `admin` | Verified |
-| Alice Smith | `alice@fxbank.io` | `Password123!` | `customer` | Verified |
-| Bob Jones | `bob@fxbank.io` | `Password123!` | `customer` | Verified |
-| Charlie Vance | `charlie@fxbank.io` | `Password123!` | `customer` | Pending |
+- **Accounts Dashboard (`/accounts`)**: Financial overview with net balance aggregation across active accounts.
+- **Account Detail & Ledger (`/accounts/:id`)**: Comprehensive chronological transaction statement distinguishing incoming credits (green `+`) from outgoing debits (red `-`).
+- **Send Money Flow (`/accounts/:id/transfers/new`)**: Inline modal with live validation and error handling.
 
 ---
 

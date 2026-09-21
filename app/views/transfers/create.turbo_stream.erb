@@ -1,0 +1,13 @@
+<%= turbo_stream.prepend "transfers_list" do %>
+  <%= render "transfers/transfer", transfer: @executed_transfer, current_account: @from_account %>
+<% end %>
+
+<%= turbo_stream.remove "no_transfers_empty_state" %>
+
+<%= turbo_stream.update "account_balance_#{@from_account.id}" do %>
+  <%= @from_account.reload.formatted_balance %>
+<% end %>
+
+<%= turbo_stream.update "transfer_modal" do %>
+  <!-- Modal closed successfully -->
+<% end %>
