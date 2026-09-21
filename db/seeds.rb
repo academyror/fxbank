@@ -1,38 +1,62 @@
 # frozen_string_literal: true
 
-puts "== Seeding FxBank Demo Data =="
+puts "== Seeding FxBank Demo Data (Section 3) =="
 
 # Clean existing records
 Transfer.delete_all
 Account.delete_all
 User.delete_all
 
-# 1. Create Demo Users
+# 1. Create Demo Users with Devise credentials
+admin = User.create!(
+  email: "admin@fxbank.io",
+  password: "Password123!",
+  password_confirmation: "Password123!",
+  first_name: "Eleanor",
+  last_name: "Vance",
+  phone_number: "+1-555-0100",
+  kyc_status: "verified",
+  role: "admin"
+)
+admin.confirm
+
 alice = User.create!(
   email: "alice@fxbank.io",
+  password: "Password123!",
+  password_confirmation: "Password123!",
   first_name: "Alice",
   last_name: "Smith",
   phone_number: "+1-555-0101",
-  kyc_status: "verified"
+  kyc_status: "verified",
+  role: "customer"
 )
+alice.confirm
 
 bob = User.create!(
   email: "bob@fxbank.io",
+  password: "Password123!",
+  password_confirmation: "Password123!",
   first_name: "Bob",
   last_name: "Jones",
   phone_number: "+1-555-0102",
-  kyc_status: "verified"
+  kyc_status: "verified",
+  role: "customer"
 )
+bob.confirm
 
 charlie = User.create!(
   email: "charlie@fxbank.io",
+  password: "Password123!",
+  password_confirmation: "Password123!",
   first_name: "Charlie",
   last_name: "Vance",
   phone_number: "+1-555-0103",
-  kyc_status: "pending"
+  kyc_status: "pending",
+  role: "customer"
 )
+charlie.confirm
 
-puts "Created #{User.count} users (Alice, Bob, Charlie)"
+puts "Created #{User.count} users (Admin Eleanor, Alice, Bob, Charlie)"
 
 # 2. Create Accounts
 alice_checking = Account.create!(

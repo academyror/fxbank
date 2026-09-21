@@ -1,4 +1,4 @@
-# FxBank &mdash; Section 2: Domain Modeling & Database Craft
+# FxBank &mdash; Section 3: Authentication, Authorization & Roles
 
 Welcome to **FxBank**, a production-grade digital banking SaaS platform built with Ruby on Rails 7.2+, PostgreSQL, Tailwind CSS, and Hotwire.
 
@@ -6,91 +6,33 @@ This repository accompanies **Course 1: Building a Modern SaaS Banking Applicati
 
 ---
 
-## 📌 Section 2 Overview
+## 📌 Section 3 Overview
 
-In Section 2, we translate high-level financial rules into durable database schemas and atomic money movements:
-- Separated customer identity (`User`) from financial holdings (`Account`) and bilateral transfer ledgers (`Transfer`).
-- Enforced PostgreSQL database-level check constraints: `balance_cents >= 0` and `amount_cents > 0`.
-- Built `Transfers::TransferService` with pessimistic row locking (`lock!`) using deterministic primary key ID sorting to eliminate race conditions and deadlocks.
-- Designed idempotency deduplication with unique UUID indexes to prevent duplicate debits from network retries.
-- Seeded realistic banking fixtures in `db/seeds.rb`.
-
----
-
-## 🗄️ Relational Domain Architecture
-
-```mermaid
-erDiagram
-    USERS ||--o{ ACCOUNTS : "has_many"
-    ACCOUNTS ||--o{ TRANSFERS : "sent_transfers (from_account_id)"
-    ACCOUNTS ||--o{ TRANSFERS : "received_transfers (to_account_id)"
-
-    USERS {
-        bigint id PK
-        string email
-        string first_name
-        string last_name
-        string phone_number
-        string kyc_status
-        datetime created_at
-    }
-
-    ACCOUNTS {
-        bigint id PK
-        bigint user_id FK
-        string account_number
-        bigint balance_cents
-        string currency
-        string status
-        datetime created_at
-    }
-
-    TRANSFERS {
-        bigint id PK
-        bigint from_account_id FK
-        bigint to_account_id FK
-        bigint amount_cents
-        string status
-        string idempotency_key
-        string description
-        datetime created_at
-    }
-```
+In Section 3, we establish hardened security boundaries around our banking application:
+- Integrated **Devise** with high bcrypt stretches (12 in production, 1 in test), 2-hour password reset windows, and failed attempt account locking.
+- Configured mandatory email confirmation (`confirmable`) with zero grace period to eliminate anonymous bot abuse.
+- Custom parameter sanitization in `ApplicationController` for KYC identity fields (`first_name`, `last_name`, `phone_number`).
+- Integrated **Pundit** declarative authorization policies:
+  - `AccountPolicy`: strict customer ownership checks and scoped queries (`policy_scope`) to eliminate IDOR (Insecure Direct Object Reference) vulnerabilities.
+  - `TransferPolicy`: bilateral checks allowing only verified senders on active accounts to debit funds, and restricting audit receipts to participants and admins.
+- Dynamic role-based post-login redirects (`after_sign_in_path_for`).
 
 ---
 
-## 💻 Interactive Concurrency Verification Drill
+## 🔐 Default Seed Credentials
 
-You can test race-condition protection directly in `bin/rails console` using concurrent Ruby threads:
+Run `bin/rails db:seed` to create pre-confirmed demo users:
 
-```ruby
-# Start console
-bin/rails c
-
-# Fetch accounts
-alice = Account.first
-bob = Account.second
-
-# Spawn two concurrent threads attempting to spend Alice's balance simultaneously:
-t1 = Thread.new do
-  Transfers::TransferService.call(from_account: alice, to_account: bob, amount_cents: alice.balance_cents)
-rescue Transfers::TransferError => e
-  puts "Thread 1 error: #{e.message}"
-end
-
-t2 = Thread.new do
-  Transfers::TransferService.call(from_account: alice, to_account: bob, amount_cents: alice.balance_cents)
-rescue Transfers::TransferError => e
-  puts "Thread 2 error: #{e.message}"
-end
-
-[t1, t2].each(&:join)
-# One thread succeeds; the other safely raises Transfers::InsufficientFundsError with zero balance drift!
-```
+| User | Email | Password | Role | KYC Status |
+|---|---|---|---|---|
+| Eleanor (Admin) | `admin@fxbank.io` | `Password123!` | `admin` | Verified |
+| Alice Smith | `alice@fxbank.io` | `Password123!` | `customer` | Verified |
+| Bob Jones | `bob@fxbank.io` | `Password123!` | `customer` | Verified |
+| Charlie Vance | `charlie@fxbank.io` | `Password123!` | `customer` | Pending |
 
 ---
 
 ## 📚 Full Course & Interactive Curriculum
 
-To access the complete step-by-step video lessons and community mentorship:  
+To access the complete step-by-step video lessons, quizzes, and community mentorship:  
 👉 **[https://www.rubyonrails.academy](https://www.rubyonrails.academy)**
