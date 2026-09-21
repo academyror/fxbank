@@ -1,4 +1,4 @@
-# FxBank &mdash; Section 5: Media Storage, Background Workers & Transactional Email
+# FxBank &mdash; Section 6: Automated Testing & Quality Gates (TDD with RSpec)
 
 Welcome to **FxBank**, a production-grade digital banking SaaS platform built with Ruby on Rails 7.2+, PostgreSQL, Tailwind CSS, and Hotwire.
 
@@ -6,44 +6,31 @@ This repository accompanies **Course 1: Building a Modern SaaS Banking Applicati
 
 ---
 
-## 📌 Section 5 Overview
+## 📌 Section 6 Overview
 
-In Section 5, we decouple heavy computational workloads, binary file streaming, and network latency from synchronous Puma web threads:
-- **Active Storage**:
-  - Direct-to-cloud uploads for KYC identity documents (passports, national IDs) and user avatars.
-  - Eliminated Puma web thread starvation by bypassing Ruby application workers during multi-megabyte binary streaming.
-  - Form validation on MIME content types and maximum file size limits (5MB avatar, 15MB KYC PDF/images).
-- **Solid Queue**:
-  - Database-backed Active Job queuing engine without Redis dependency.
-  - Configured worker and dispatcher topologies in `config/queue.yml`.
-  - Background workers:
-    - `TransferNotificationJob`: asynchronous email dispatching to avoid SMTP latency spikes during transactions.
-    - `KycVerificationJob`: asynchronous compliance document pipeline.
-- **Action Mailer**:
-  - `TransferMailer`: Branded transactional email templates (`transfer_sent` and `transfer_received`) in HTML and plain-text.
+In Section 6, we construct an automated financial safety net using **RSpec**, **FactoryBot**, and **Shoulda Matchers**:
+- **Testing Pyramid Execution**:
+  - **70% Unit Specs**: Testing domain invariants, model validations, custom calculation helpers, and isolated Pundit policies.
+  - **20% Request Specs**: Testing Devise authentication cookies, HTTP routing contracts, Turbo 303 redirects, and 422 Unprocessable Content handling.
+  - **10% Service & Job Specs**: Verifying transaction atomicity, rollback on unexpected SQL failures, and background queue dispatching.
+- **Financial Concurrency & Atomic Rollback Guarantees**:
+  - `Transfers::TransferService`: Overdraft tests ensuring 0 balance drift under failed transfers.
+  - Simulating database exceptions mid-transaction to verify atomic rollback guarantees.
+  - Idempotency key deduplication tests ensuring repeated retries do not double-debit funds.
 
 ---
 
-## 📬 Transaction Notification Flow
+## 🧪 Running the Test Suite
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Customer as Alice (Sender)
-    participant Web as Puma Web Thread
-    participant DB as PostgreSQL
-    participant Queue as Solid Queue
-    actor Recipient as Bob (Receiver)
+```bash
+# Run all specs
+bundle exec rspec
 
-    Customer->>Web: POST /transfers (Send $250 to Bob)
-    Web->>DB: Pessimistic Row Lock (Alice & Bob)
-    Web->>DB: Atomic Balance Mutation & Transfer Record
-    Web->>Queue: Enqueue TransferNotificationJob(transfer_id)
-    Web-->>Customer: Instant Turbo Stream Response (200 OK)
-    Note over Queue,DB: Asynchronous Background Execution
-    Queue->>DB: Fetch Transfer & User details
-    Queue->>Customer: Send TransferMailer.transfer_sent
-    Queue->>Recipient: Send TransferMailer.transfer_received
+# Run specific domain service specs
+bundle exec rspec spec/services/transfers/transfer_service_spec.rb
+
+# Run authorization policy specs
+bundle exec rspec spec/policies/
 ```
 
 ---
