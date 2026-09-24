@@ -1,12 +1,13 @@
 # FxBank &mdash; Digital Banking SaaS Platform
 
-[![Ruby](https://img.shields.io/badge/Ruby-3.2%2B-CC342D?logo=ruby&logoColor=white)](https://www.ruby-lang.org/)
-[![Rails](https://img.shields.io/badge/Rails-7.2%2B-D30001?logo=rubyonrails&logoColor=white)](https://rubyonrails.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Hotwire](https://img.shields.io/badge/Hotwire-Turbo%20%26%20Stimulus-F3722C)](https://hotwired.dev/)
+[![Ruby](https://img.shields.io/badge/Ruby-3.3%2B-CC342D?logo=ruby&logoColor=white)](https://www.ruby-lang.org/)
+[![Rails](https://img.shields.io/badge/Rails-7.2%20%7C%208.0%20Ready-D30001?logo=rubyonrails&logoColor=white)](https://rubyonrails.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%2B-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Hotwire](https://img.shields.io/badge/Hotwire-Turbo%208%20%26%20Stimulus%203-F3722C)](https://hotwired.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![RSpec](https://img.shields.io/badge/Tested%20With-RSpec-6A1B9A)](https://rspec.info/)
-[![Kamal 2](https://img.shields.io/badge/Deploy-Kamal%202-000000)](https://kamal-deploy.org/)
+[![Tested With](https://img.shields.io/badge/Tested%20With-RSpec%20TDD-6A1B9A)](https://rspec.info/)
+[![Queue](https://img.shields.io/badge/Queue-Solid%20Queue-334155)](https://github.com/rails/solid_queue)
+[![Deploy](https://img.shields.io/badge/Deploy-Kamal%202-000000)](https://kamal-deploy.org/)
 [![Docker](https://img.shields.io/badge/Docker-Multi--Stage-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
 > **Official reference repository** for **Course 1: Building a Modern SaaS Banking Application** at [Ruby on Rails Academy (rubyonrails.academy)](https://www.rubyonrails.academy).
@@ -117,8 +118,8 @@ sequenceDiagram
 ### Option A: Native Development
 
 #### 1. Prerequisites
-- Ruby 3.2.0+ (via `rbenv`, `rvm`, or `asdf`)
-- PostgreSQL 14+ running locally
+- Ruby 3.3.0+ (or 3.2+) (via `rbenv`, `rvm`, or `asdf`)
+- PostgreSQL 16+ running locally
 - Node.js 18+ and Yarn
 
 #### 2. Install & Boot
