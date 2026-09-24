@@ -21,6 +21,7 @@ module Transfers
     def execute
       validate_transfer!
 
+      transfer = nil
       ActiveRecord::Base.transaction do
         # 1. Idempotency check: Return existing transfer if already completed
         if @idempotency_key.present?

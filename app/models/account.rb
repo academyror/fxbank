@@ -13,20 +13,25 @@ class Account < ApplicationRecord
            foreign_key: :to_account_id,
            dependent: :restrict_with_error
 
-  enum :status, { active: "active", frozen: "frozen", closed: "closed" }, default: :active
+  enum :status, { active: "active", suspended: "frozen", closed: "closed" }, default: :active
 
   validates :account_number, presence: true, uniqueness: true
   validates :balance_cents, numericality: { greater_than_or_equal_to: 0 }
-  validates :currency, presence: true, inclusion: { in: %w[USD EUR GBP] }
+  validates :currency, presence: true, inclusion: { in: %w[USD EUR GBP JPY CHF] }
+  validates :account_type, presence: true, inclusion: { in: %w[checking savings operational] }
 
   before_validation :generate_account_number, on: :create
 
+  def money
+    ValueObjects::Money.new(balance_cents, currency)
+  end
+
   def balance_dollars
-    balance_cents / 100.0
+    money.decimal_amount
   end
 
   def formatted_balance
-    format("$%.2f %s", balance_dollars, currency)
+    "#{money.format} #{currency}"
   end
 
   def transfers

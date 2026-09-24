@@ -18,6 +18,7 @@ gem "stimulus-rails"
 gem "cssbundling-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
+gem "json", "< 3.0"
 
 # Authentication & Authorization for Financial SaaS
 gem "devise", "~> 4.9"

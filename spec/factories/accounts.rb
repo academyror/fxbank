@@ -6,6 +6,7 @@ FactoryBot.define do
     sequence(:account_number) { |n| "FX-%06d" % (100_000 + n) }
     balance_cents { 100_000 } # $1,000.00 default
     currency { "USD" }
+    account_type { "checking" }
     status { "active" }
 
     trait :frozen do

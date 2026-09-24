@@ -14,7 +14,8 @@ RSpec.describe Account, type: :model do
 
     it { is_expected.to validate_numericality_of(:balance_cents).is_greater_than_or_equal_to(0) }
     it { is_expected.to validate_presence_of(:currency) }
-    it { is_expected.to validate_inclusion_of(:currency).in_array(%w[USD EUR GBP]) }
+    it { is_expected.to validate_inclusion_of(:currency).in_array(%w[USD EUR GBP JPY CHF]) }
+    it { is_expected.to validate_inclusion_of(:account_type).in_array(%w[checking savings operational]) }
   end
 
   describe 'account number generation' do
@@ -26,11 +27,23 @@ RSpec.describe Account, type: :model do
     end
   end
 
-  describe '#formatted_balance' do
-    let(:account) { build(:account, balance_cents: 250_000, currency: 'USD') }
+  describe '#money' do
+    let(:account) { build(:account, balance_cents: 150_00, currency: 'EUR') }
 
-    it 'formats balance in dollars with currency symbol' do
+    it 'returns a ValueObjects::Money instance' do
+      expect(account.money).to eq(ValueObjects::Money.new(150_00, 'EUR'))
+    end
+  end
+
+  describe '#formatted_balance' do
+    it 'formats balance in dollars with currency symbol for USD' do
+      account = build(:account, balance_cents: 250_000, currency: 'USD')
       expect(account.formatted_balance).to eq('$2500.00 USD')
+    end
+
+    it 'formats balance with zero decimal places for JPY' do
+      account = build(:account, balance_cents: 5000, currency: 'JPY')
+      expect(account.formatted_balance).to eq('¥5000 JPY')
     end
   end
 end
