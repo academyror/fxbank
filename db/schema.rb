@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_25_000004) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_25_000011) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -28,7 +28,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_25_000004) do
     t.index ["user_id", "currency", "account_type"], name: "index_accounts_on_user_currency_and_type", unique: true
     t.index ["user_id"], name: "index_accounts_on_user_id"
     t.check_constraint "balance_cents >= 0", name: "check_account_balance_non_negative"
-    t.check_constraint "currency::text = ANY (ARRAY['USD'::character varying, 'EUR'::character varying, 'GBP'::character varying, 'JPY'::character varying, 'CHF'::character varying]::text[])", name: "check_accounts_supported_currency"
+    t.check_constraint "currency::text = ANY (ARRAY['USD'::character varying::text, 'EUR'::character varying::text, 'GBP'::character varying::text, 'JPY'::character varying::text, 'CHF'::character varying::text])", name: "check_accounts_supported_currency"
   end
 
   create_table "active_storage_attachments", force: :cascade do |t|
@@ -86,6 +86,58 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_25_000004) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["from_currency", "to_currency", "recorded_at"], name: "index_fx_rates_on_currencies_and_recorded_at"
+  end
+
+  create_table "ledger_accounts", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "name", null: false
+    t.string "code", null: false
+    t.string "account_type", null: false
+    t.string "currency", limit: 3, null: false
+    t.bigint "cached_balance_subunits", default: 0, null: false
+    t.integer "lock_version", default: 0, null: false
+    t.bigint "account_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_ledger_accounts_on_account_id"
+    t.index ["code"], name: "index_ledger_accounts_on_code", unique: true
+    t.index ["currency", "account_type"], name: "index_ledger_accounts_on_currency_and_account_type"
+  end
+
+  create_table "ledger_entries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "ledger_journal_id", null: false
+    t.uuid "ledger_account_id", null: false
+    t.string "entry_type", null: false
+    t.bigint "amount_subunits", null: false
+    t.string "currency", limit: 3, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ledger_account_id"], name: "index_ledger_entries_on_ledger_account_id"
+    t.index ["ledger_journal_id"], name: "index_ledger_entries_on_ledger_journal_id"
+    t.check_constraint "amount_subunits > 0", name: "check_ledger_entry_amount_positive"
+    t.check_constraint "entry_type::text = ANY (ARRAY['debit'::character varying, 'credit'::character varying]::text[])", name: "check_ledger_entry_type"
+  end
+
+  create_table "ledger_journals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "description", null: false
+    t.string "reference_type"
+    t.string "reference_id"
+    t.string "status", default: "posted", null: false
+    t.datetime "posted_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["posted_at"], name: "index_ledger_journals_on_posted_at"
+    t.index ["reference_type", "reference_id"], name: "index_ledger_journals_on_reference_type_and_reference_id"
+  end
+
+  create_table "ledger_snapshots", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "ledger_account_id", null: false
+    t.bigint "balance_subunits", null: false
+    t.string "currency", limit: 3, null: false
+    t.datetime "snapshot_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ledger_account_id", "snapshot_at"], name: "index_ledger_snapshots_on_ledger_account_id_and_snapshot_at"
+    t.index ["ledger_account_id"], name: "index_ledger_snapshots_on_ledger_account_id"
   end
 
   create_table "solid_queue_claimed_executions", force: :cascade do |t|
@@ -224,6 +276,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_25_000004) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "fx_quotes", "users"
+  add_foreign_key "ledger_accounts", "accounts"
+  add_foreign_key "ledger_entries", "ledger_accounts"
+  add_foreign_key "ledger_entries", "ledger_journals"
+  add_foreign_key "ledger_snapshots", "ledger_accounts"
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
